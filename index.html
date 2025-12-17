@@ -5,22 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Time Difference Calculator</title>
     <style>
-        /* 全局重置：解决旧内核 padding 计算问题 */
         * { box-sizing: border-box; -webkit-box-sizing: border-box; }
         
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             margin: 0; 
-            padding: 15px; /* 减小移动端边距 */
+            padding: 20px; 
             background: #f0f2f5; 
             color: #333; 
-            font-size: 16px; /* 防止 iOS 自动缩放输入框 */
+            font-size: 16px; 
         }
 
         .app { 
             display: flex; 
-            gap: 20px; 
-            max-width: 1000px; 
+            /* 修改 1: 加大间距 */
+            gap: 40px; 
+            /* 修改 2: 加大整体容器宽度 */
+            max-width: 1200px; 
             margin: 0 auto; 
             align-items: flex-start; 
         }
@@ -28,69 +29,76 @@
         .input-section, .result-section { 
             flex: 1; 
             background: white; 
-            padding: 20px; 
-            border-radius: 12px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
-            /* 关键：防止 flex 子元素被内容撑爆 */
+            /* 修改 3: 加大卡片内部空间 */
+            padding: 40px; 
+            border-radius: 16px; /* 圆角稍微加大 */
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06); 
             min-width: 0; 
         }
 
         .input-group { 
-            margin-bottom: 15px; 
+            margin-bottom: 20px; 
             display: flex; 
             align-items: center; 
-            flex-wrap: wrap; /* 允许换行，防止挤压 */
+            flex-wrap: wrap; 
         }
         
         label { 
-            flex: 0 0 130px; /* 固定标签宽度 */
-            text-align: right; 
+            /* 修改 4: 文本左对齐 */
+            text-align: left; 
+            flex: 0 0 140px; 
             margin-right: 15px; 
             font-weight: 600; 
             color: #555;
-            font-size: 14px;
+            font-size: 15px;
         }
         
-        /* 优化输入框样式 */
         select, input { 
             flex: 1; 
-            min-width: 0; /* 关键：解决 Flex 布局下文字溢出问题 */
-            width: 100%; /* 确保填满容器 */
-            padding: 10px; 
+            min-width: 0; 
+            width: 100%; 
+            padding: 12px; /* 输入框稍微加高 */
             font-size: 15px; 
-            border: 1px solid #ccc; 
-            border-radius: 6px;
+            border: 1px solid #ddd; 
+            border-radius: 8px;
             background-color: #fff;
-            
-            /* 解决文字溢出样式 */
             white-space: nowrap; 
             overflow: hidden; 
             text-overflow: ellipsis;
+            transition: border-color 0.2s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #007bff;
         }
         
         button { 
-            padding: 12px; 
+            padding: 14px; 
             background: #007bff; 
             color: white; 
             border: none; 
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer; 
             width: 100%; 
             font-size: 16px; 
             font-weight: bold;
-            margin-top: 10px;
-            -webkit-appearance: none; /* 移除 iOS 默认按钮样式 */
+            margin-top: 15px;
+            box-shadow: 0 2px 6px rgba(0,123,255,0.3);
+            transition: background 0.2s;
         }
+
+        button:hover { background: #0069d9; }
         
-        #result { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px; }
+        #result { margin-top: 25px; padding: 20px; background: #f8f9fa; border-radius: 10px; font-size: 15px; line-height: 1.6; }
         
         .timeline {
             position: relative;
             width: 100%;
-            height: 30px;
+            height: 36px; /* 稍微加高进度条 */
             background: #e9ecef;
-            margin: 10px 0 5px 0;
-            border-radius: 4px;
+            margin: 12px 0 6px 0;
+            border-radius: 6px;
             overflow: hidden;
         }
         .timeline .free-my { position: absolute; height: 100%; background: #4facfe; opacity: 0.9; }
@@ -99,40 +107,31 @@
         .timeline-labels {
             display: flex;
             justify-content: space-between;
-            font-size: 11px;
+            font-size: 12px;
             color: #888;
         }
         
-        /* --- 针对移动设备的深度优化 --- */
-        @media (max-width: 768px) {
+        /* 移动端适配 */
+        @media (max-width: 850px) {
             .app { 
                 flex-direction: column; 
-                gap: 15px; 
+                gap: 20px; 
             }
             
             .input-section, .result-section {
-                padding: 15px; /* 减小内边距 */
+                padding: 20px; /* 移动端保持适中内边距 */
                 width: 100%;
             }
 
-            /* 强制改为上下结构，消除左右间隙 */
             .input-group { 
                 display: block; 
-                margin-bottom: 12px;
+                margin-bottom: 15px;
             }
             
             label { 
                 display: block; 
                 width: 100%; 
-                text-align: left; 
-                margin: 0 0 6px 0; /* 标签和输入框只留微小间距 */
-                margin-right: 0;
-            }
-            
-            select, input { 
-                display: block;
-                width: 100%; 
-                max-width: none; /* 移除最大宽度限制 */
+                margin: 0 0 8px 0; 
             }
         }
     </style>
@@ -140,7 +139,7 @@
 <body>
     <div class="app">
         <div class="input-section">
-            <h1 style="text-align: center; margin-bottom: 20px; font-size: 1.5em; color: #2c3e50;">Time Calculator</h1>
+            <h1 style="text-align: center; margin-bottom: 30px; font-size: 1.6em; color: #2c3e50;">Time Calculator</h1>
             
             <div class="input-group">
                 <label for="myTimezone">Your Timezone:</label>
@@ -157,7 +156,7 @@
                 <input type="time" id="myEnd" value="23:00">
             </div>
             
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
             
             <div class="input-group">
                 <label for="otherTimezone">Other's Timezone:</label>
@@ -178,22 +177,24 @@
         </div>
         
         <div class="result-section">
-            <h2 style="text-align: center; margin-bottom: 15px; font-size: 1.3em; color: #2c3e50;">Results</h2>
+            <h2 style="text-align: center; margin-bottom: 20px; font-size: 1.4em; color: #2c3e50;">Results</h2>
             <div id="result">
-                <p style="text-align: center; color: #777;">Click calculate to see results</p>
-            </div>
+                </div>
         </div>
     </div>
     
-    <div style="display: flex; justify-content: center; margin: 20px auto; align-items: center; gap: 10px;">
+    <div style="display: flex; justify-content: center; margin: 30px auto; align-items: center; gap: 10px;">
         <label for="language" style="width: auto; margin: 0; flex: 0 0 auto;">Language:</label>
-        <select id="language" onchange="changeLanguage()" style="width: 100px; flex: 0 0 100px;">
+        <select id="language" onchange="changeLanguage()" style="width: 120px; flex: 0 0 120px;">
             <option value="en">English</option>
             <option value="zh">中文</option>
         </select>
     </div>
 
     <script>
+        // 记录是否已经计算过，用于判断是否显示默认提示
+        let hasCalculated = false;
+
         const languages = {
             en: {
                 title: "Time Difference Calculator",
@@ -215,7 +216,8 @@
                 otherFreeTime: "Other's Schedule (Converted)",
                 language: "Language",
                 hours: "hrs",
-                minutes: "mins"
+                minutes: "mins",
+                defaultMsg: "Click 'Calculate Overlap' to see results" // 新增
             },
             zh: {
                 title: "时差与重叠时间计算",
@@ -237,7 +239,8 @@
                 otherFreeTime: "对方时间轴 (换算后)",
                 language: "语言",
                 hours: "小时",
-                minutes: "分钟"
+                minutes: "分钟",
+                defaultMsg: "点击“计算重叠时间”查看结果" // 新增
             }
         };
 
@@ -343,7 +346,19 @@
             currentLang = document.getElementById('language').value;
             updateLanguage();
             populateTimezones();
-            calculateOverlap();
+            
+            // 如果已经计算过，刷新结果文字；如果没计算过，刷新默认提示文字
+            if (hasCalculated) {
+                calculateOverlap();
+            } else {
+                updateDefaultMessage();
+            }
+        }
+        
+        // 专门处理默认提示信息的更新
+        function updateDefaultMessage() {
+             const lang = languages[currentLang];
+             document.getElementById('result').innerHTML = `<p style="text-align: center; color: #777;">${lang.defaultMsg}</p>`;
         }
         
         function updateLanguage() {
@@ -361,6 +376,7 @@
         }
         
         function calculateOverlap() {
+            hasCalculated = true; // 标记用户已点击计算
             const lang = languages[currentLang];
             const myTzValue = document.getElementById('myTimezone').value;
             const myStart = document.getElementById('myStart').value;
@@ -525,9 +541,11 @@
             return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
         }
 
+        // 初始化语言和默认信息
         document.getElementById('language').value = currentLang;
         updateLanguage();
         populateTimezones();
+        updateDefaultMessage(); // 确保初始加载显示中文提示
     </script>
 </body>
 </html>
