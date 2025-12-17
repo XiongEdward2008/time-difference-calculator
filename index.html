@@ -217,7 +217,7 @@
                 language: "Language",
                 hours: "hrs",
                 minutes: "mins",
-                defaultMsg: "Click 'Calculate Overlap' to see results" // 新增
+                defaultMsg: "Click 'Calculate Overlap' to see results"
             },
             zh: {
                 title: "时差与重叠时间计算",
@@ -240,7 +240,7 @@
                 language: "语言",
                 hours: "小时",
                 minutes: "分钟",
-                defaultMsg: "点击“计算重叠时间”查看结果" // 新增
+                defaultMsg: "点击“计算重叠时间”查看结果"
             }
         };
 
@@ -273,7 +273,7 @@
             '12': { en: 'New Zealand', zh: '新西兰' }
         };
         
-        let currentLang = 'zh';
+        let currentLang = 'en';
 
         function createOption(value, text, isSelected) {
             const option = document.createElement('option');
@@ -545,7 +545,7 @@
         document.getElementById('language').value = currentLang;
         updateLanguage();
         populateTimezones();
-        updateDefaultMessage(); // 确保初始加载显示中文提示
+        updateDefaultMessage(); // 确保初始加载默认显示英文提示
     </script>
 </body>
 </html>
