@@ -5,61 +5,96 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Difference Calculator</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
-        .app { display: flex; gap: 30px; max-width: 1200px; margin: 0 auto; }
-        .input-section { flex: 1; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .result-section { flex: 1; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .input-group { margin-bottom: 10px; display: flex; align-items: center; justify-content: center; }
-        label { display: inline-block; width: 200px; text-align: right; margin-right: 10px; font-weight: bold; }
-        select, input { width: 100px; padding: 6px; font-size: 14px; }
-        button { padding: 8px 16px; background: #007bff; color: white; border: none; cursor: pointer; width: 100%; font-size: 16px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; padding: 20px; background: #f0f2f5; color: #333; }
+        .app { display: flex; gap: 40px; max-width: 1200px; margin: 0 auto; align-items: flex-start; }
+        
+        /* 卡片样式优化，更宽松 */
+        .input-section, .result-section { 
+            flex: 1; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+        }
+
+        .input-group { margin-bottom: 20px; display: flex; align-items: center; }
+        
+        label { 
+            flex: 0 0 140px; /* 固定标签宽度 */
+            text-align: right; 
+            margin-right: 15px; 
+            font-weight: 600; 
+            color: #555;
+        }
+        
+        /* 加宽下拉框以容纳详细文字 */
+        select, input { 
+            flex: 1; /* 填满剩余空间 */
+            max-width: 280px; /* 限制最大宽度 */
+            padding: 8px 12px; 
+            font-size: 14px; 
+            border: 1px solid #ccc; 
+            border-radius: 6px;
+        }
+        
+        button { 
+            padding: 12px 20px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 6px;
+            cursor: pointer; 
+            width: 100%; 
+            font-size: 16px; 
+            font-weight: bold;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
         button:hover { background: #0056b3; }
-        #result { margin-top: 20px; padding: 10px; background: #f8f9fa; border: 1px solid #dee2e6; }
+        
+        #result { margin-top: 20px; padding: 15px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; }
+        
+        /* 时间轴样式 */
         .timeline {
             position: relative;
             width: 100%;
-            height: 30px;
-            background: #ddd;
-            margin: 10px 0;
-            border-radius: 5px;
+            height: 36px; /* 稍微加高 */
+            background: #e9ecef;
+            margin: 15px 0 5px 0;
+            border-radius: 6px;
+            overflow: hidden;
         }
         .timeline .free-my {
             position: absolute;
             height: 100%;
-            background: blue;
-            border-radius: 5px;
+            background: #4facfe; /* 较柔和的蓝色 */
+            opacity: 0.9;
         }
         .timeline .free-other {
             position: absolute;
             height: 100%;
-            background: red;
-            border-radius: 5px;
+            background: #ff758c; /* 较柔和的红色 */
+            opacity: 0.9;
         }
         .timeline-labels {
             display: flex;
             justify-content: space-between;
             font-size: 12px;
-            margin-top: 2px;
+            color: #777;
         }
         
-        @media (max-width: 768px) {
-            .app {
-                flex-direction: column;
-                gap: 20px;
-            }
-            .input-section, .result-section {
-                padding: 15px;
-            }
-            label {
-                width: 150px;
-            }
+        @media (max-width: 850px) {
+            .app { flex-direction: column; gap: 20px; }
+            .input-group { flex-direction: column; align-items: flex-start; }
+            label { text-align: left; margin-bottom: 5px; width: 100%; }
+            select, input { max-width: 100%; width: 100%; }
         }
     </style>
 </head>
 <body>
     <div class="app">
         <div class="input-section">
-            <h1 style="text-align: center; margin-bottom: 20px; color: #333;">Time Difference Calculator</h1>
+            <h1 style="text-align: center; margin-bottom: 30px; color: #2c3e50;">Time Calculator</h1>
             
             <div class="input-group">
                 <label for="myTimezone">Your Timezone:</label>
@@ -67,14 +102,16 @@
             </div>
             
             <div class="input-group">
-                <label for="myStart">Your Free Time Start:</label>
-                <input type="time" id="myStart">
+                <label for="myStart">Your Free Start:</label>
+                <input type="time" id="myStart" value="09:00">
             </div>
             
             <div class="input-group">
-                <label for="myEnd">Your Free Time End:</label>
-                <input type="time" id="myEnd">
+                <label for="myEnd">Your Free End:</label>
+                <input type="time" id="myEnd" value="23:00">
             </div>
+            
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
             
             <div class="input-group">
                 <label for="otherTimezone">Other's Timezone:</label>
@@ -82,40 +119,187 @@
             </div>
             
             <div class="input-group">
-                <label for="otherStart">Other's Free Time Start:</label>
-                <input type="time" id="otherStart">
+                <label for="otherStart">Other's Free Start:</label>
+                <input type="time" id="otherStart" value="09:00">
             </div>
             
             <div class="input-group">
-                <label for="otherEnd">Other's Free Time End:</label>
-                <input type="time" id="otherEnd">
+                <label for="otherEnd">Other's Free End:</label>
+                <input type="time" id="otherEnd" value="23:00">
             </div>
             
             <button onclick="calculateOverlap()">Calculate Overlap</button>
         </div>
         
         <div class="result-section">
-            <h2 style="text-align: center; margin-bottom: 20px; color: #333;">Results</h2>
-            <div id="result"></div>
+            <h2 style="text-align: center; margin-bottom: 20px; color: #2c3e50;">Results</h2>
+            <div id="result">
+                <p style="text-align: center; color: #777;">Click calculate to see results</p>
+            </div>
         </div>
     </div>
     
-    <div style="display: flex; justify-content: center; margin: 10px auto;">
-        <label for="language">Language:</label>
-        <select id="language" onchange="changeLanguage()">
+    <div style="display: flex; justify-content: center; margin: 20px auto; align-items: center; gap: 10px;">
+        <label for="language" style="width: auto; margin: 0;">Language:</label>
+        <select id="language" onchange="changeLanguage()" style="width: 120px;">
             <option value="en">English</option>
             <option value="zh">中文</option>
         </select>
     </div>
 
     <script>
-        // Helper functions
-        function createOption(tz, isSelected) {
+        // Language configuration
+        const languages = {
+            en: {
+                title: "Time Difference Calculator",
+                resultsTitle: "Overlap Results",
+                yourTimezone: "Your Timezone",
+                yourStart: "Free Time Start",
+                yourEnd: "Free Time End",
+                otherTimezone: "Other's Timezone",
+                otherStart: "Free Time Start",
+                otherEnd: "Free Time End",
+                calculate: "Calculate Overlap",
+                fillAllTimes: "Please fill in all time fields.",
+                noOverlap: "No overlapping free time found.",
+                invalidTime: "Start time must be earlier than end time.",
+                overlappingTimes: "Total Overlap:",
+                inYourTimezone: "In Your Timezone",
+                inOtherTimezone: "In Other's Timezone",
+                yourFreeTime: "Your Schedule",
+                otherFreeTime: "Other's Schedule (Converted)",
+                language: "Language",
+                hours: "hrs",
+                minutes: "mins"
+            },
+            zh: {
+                title: "时差与重叠时间计算",
+                resultsTitle: "计算结果",
+                yourTimezone: "你的时区",
+                yourStart: "空闲开始时间",
+                yourEnd: "空闲结束时间",
+                otherTimezone: "对方的时区",
+                otherStart: "空闲开始时间",
+                otherEnd: "空闲结束时间",
+                calculate: "计算重叠时间",
+                fillAllTimes: "请填写完整的时间信息。",
+                noOverlap: "很遗憾，没有重叠的空闲时间。",
+                invalidTime: "开始时间必须早于结束时间。",
+                overlappingTimes: "重叠时长:",
+                inYourTimezone: "你的当地时间",
+                inOtherTimezone: "对方当地时间",
+                yourFreeTime: "你的时间轴",
+                otherFreeTime: "对方时间轴 (已换算为你当地时间)",
+                language: "语言",
+                hours: "小时",
+                minutes: "分钟"
+            }
+        };
+
+        // Timezone Data with Explicit DST/Standard labels
+        // Format: Key is UTC offset string. 
+        // Value: Object with EN/ZH descriptions focusing on Clarity and Seasons.
+        const tzDescriptions = {
+            '-12': { en: 'Baker Island', zh: '贝克岛 (UTC-12)' },
+            '-11': { en: 'Samoa', zh: '萨摩亚 (UTC-11)' },
+            '-10': { en: 'Hawaii (USA)', zh: '美国夏威夷 (UTC-10)' },
+            '-9': { en: 'Alaska Standard Time (Winter)', zh: '美国阿拉斯加 (冬令时)' },
+            '-8': { 
+                en: 'Pacific Standard Time (Winter) / Alaska Daylight (Summer)', 
+                zh: '美国太平洋时间 (冬令时) / 阿拉斯加 (夏令时)' 
+            },
+            '-7': { 
+                en: 'Mountain Standard (Winter) / Pacific Daylight (Summer)', 
+                zh: '美国山地时间 (冬令时) / 美国太平洋时间 (夏令时)' 
+            },
+            '-6': { 
+                en: 'Central Standard (Winter) / Mountain Daylight (Summer)', 
+                zh: '美国中部时间 (冬令时) / 美国山地时间 (夏令时)' 
+            },
+            '-5': { 
+                en: 'Eastern Standard (Winter) / Central Daylight (Summer)', 
+                zh: '美国东部时间 (冬令时) / 美国中部时间 (夏令时)' 
+            },
+            '-4': { 
+                en: 'Atlantic Standard / Eastern Daylight Time (Summer)', 
+                zh: '大西洋标准时 / 美国东部时间 (夏令时)' 
+            },
+            '-3': { en: 'Argentina / Brazil', zh: '阿根廷 / 巴西' },
+            '-2': { en: 'Mid-Atlantic', zh: '中大西洋' },
+            '-1': { en: 'Azores', zh: '亚速尔群岛' },
+            '0': { 
+                en: 'GMT (London/UK Winter)', 
+                zh: '格林威治标准时间 (英国冬令时)' 
+            },
+            '1': { 
+                en: 'CET (Central Europe Winter) / UK Summer', 
+                zh: '欧洲中部时间 (冬令时) / 英国 (夏令时)' 
+            },
+            '2': { 
+                en: 'EET (Eastern Europe Winter) / Central Europe Summer', 
+                zh: '欧洲东部时间 (冬令时) / 欧洲中部 (夏令时)' 
+            },
+            '3': { en: 'Moscow / Eastern Europe Summer', zh: '莫斯科 / 欧洲东部 (夏令时)' },
+            '4': { en: 'Dubai', zh: '迪拜' },
+            '5': { en: 'Pakistan', zh: '巴基斯坦' },
+            '5.5': { en: 'India (IST)', zh: '印度标准时间' },
+            '6': { en: 'Bangladesh', zh: '孟加拉国' },
+            '7': { en: 'Thailand / Vietnam', zh: '泰国 / 越南' },
+            '8': { en: 'China / Singapore / Perth', zh: '中国标准时间 (北京) / 新加坡' },
+            '9': { en: 'Japan / Korea', zh: '日本 / 韩国' },
+            '10': { en: 'Sydney (Winter)', zh: '澳大利亚悉尼 (冬令时)' },
+            '11': { en: 'Sydney (Summer) / Noumea', zh: '澳大利亚悉尼 (夏令时) / 努美阿' },
+            '12': { en: 'New Zealand', zh: '新西兰' }
+        };
+        
+        let currentLang = 'zh'; // Default to Chinese as per prompt context
+
+        function createOption(value, text, isSelected) {
             const option = document.createElement('option');
-            option.value = tz;
-            option.textContent = tz;
+            option.value = value;
+            option.textContent = text;
             if (isSelected) option.selected = true;
             return option;
+        }
+
+        // Helper to handle .5 timezones if needed
+        function getTimezonesArray() {
+            const arr = [];
+            // Adding common integer zones
+            for (let i = -12; i <= 12; i++) {
+                const sign = i >= 0 ? '+' : '';
+                arr.push(`UTC${sign}${i}`);
+            }
+            // Insert India manually for completeness if desired, 
+            // relying on simple parsing logic in calculation
+            // For this simpler version, we stick to integers but the map supports decimals if we updated the lopp
+            return arr;
+        }
+
+        function populateTimezones() {
+            const mySelect = document.getElementById('myTimezone');
+            const otherSelect = document.getElementById('otherTimezone');
+            
+            const currentMy = mySelect.value || 'UTC+8';
+            const currentOther = otherSelect.value || 'UTC-5';
+            
+            mySelect.innerHTML = '';
+            otherSelect.innerHTML = '';
+
+            const timezones = getTimezonesArray();
+
+            timezones.forEach(tz => {
+                const offset = parseInt(tz.replace('UTC', ''));
+                const desc = tzDescriptions[offset.toString()] || { en: '', zh: '' };
+                const location = currentLang === 'zh' ? desc.zh : desc.en;
+                
+                // Format: UTC-5 美国东部时间 (冬令时)
+                // Using a separator for cleaner look
+                const label = location ? `${tz}  ${location}` : tz;
+
+                mySelect.appendChild(createOption(tz, label, tz === currentMy));
+                otherSelect.appendChild(createOption(tz, label, tz === currentOther));
+            });
         }
         
         function getBars(startMin, endMin) {
@@ -145,60 +329,10 @@
             `;
         }
         
-        // Language support
-        const languages = {
-            en: {
-                title: "Time Difference Calculator",
-                resultsTitle: "Results",
-                yourTimezone: "Your Timezone:",
-                yourStart: "Your Free Time Start:",
-                yourEnd: "Your Free Time End:",
-                otherTimezone: "Other's Timezone:",
-                otherStart: "Other's Free Time Start:",
-                otherEnd: "Other's Free Time End:",
-                calculate: "Calculate Overlap",
-                fillAllTimes: "Please fill in all times.",
-                noOverlap: "No overlapping time.",
-                invalidTime: "Start time must be before end time.",
-                overlappingTimes: "Overlapping times:",
-                inYourTimezone: "In your timezone",
-                inOtherTimezone: "In other's timezone",
-                yourFreeTime: "Your free time:",
-                otherFreeTime: "Other's free time (shifted to your timezone):",
-                language: "Language:",
-                hours: "hours",
-                minutes: "minutes"
-            },
-            zh: {
-                title: "时差计算器",
-                resultsTitle: "结果",
-                yourTimezone: "你的时区:",
-                yourStart: "你的空闲时间开始:",
-                yourEnd: "你的空闲时间结束:",
-                otherTimezone: "对方的时区:",
-                otherStart: "对方的空闲时间开始:",
-                otherEnd: "对方的空闲时间结束:",
-                calculate: "计算重叠",
-                fillAllTimes: "请填写所有时间。",
-                noOverlap: "没有重叠时间。",
-                invalidTime: "开始时间必须在结束时间之前。",
-                overlappingTimes: "重叠时间:",
-                inYourTimezone: "在你的时区",
-                inOtherTimezone: "在对方的时区",
-                yourFreeTime: "你的空闲时间:",
-                otherFreeTime: "对方的空闲时间（转换到你的时区）:",
-                language: "语言:",
-                hours: "小时",
-                minutes: "分钟"
-            }
-        };
-        
-        let currentLang = 'en';
-        
         function changeLanguage() {
             currentLang = document.getElementById('language').value;
             updateLanguage();
-            // Always refresh to update any displayed messages
+            populateTimezones();
             calculateOverlap();
         }
         
@@ -216,69 +350,48 @@
             document.querySelector('label[for="language"]').textContent = lang.language;
         }
         
-        // Populate timezone options
-        const timezones = [
-            'UTC-12', 'UTC-11', 'UTC-10', 'UTC-9', 'UTC-8', 'UTC-7', 'UTC-6', 'UTC-5',
-            'UTC-4', 'UTC-3', 'UTC-2', 'UTC-1', 'UTC+0', 'UTC+1', 'UTC+2', 'UTC+3',
-            'UTC+4', 'UTC+5', 'UTC+6', 'UTC+7', 'UTC+8', 'UTC+9', 'UTC+10', 'UTC+11', 'UTC+12'
-        ];
-        
-        const myTimezoneSelect = document.getElementById('myTimezone');
-        const otherTimezoneSelect = document.getElementById('otherTimezone');
-        
-        timezones.forEach(tz => {
-            myTimezoneSelect.appendChild(createOption(tz, tz === 'UTC+8'));
-            otherTimezoneSelect.appendChild(createOption(tz, tz === 'UTC-4'));
-        });
-        
-        // Initialize language
-        updateLanguage();
-        
         function calculateOverlap() {
             const lang = languages[currentLang];
-            const myTz = document.getElementById('myTimezone').value;
+            const myTzValue = document.getElementById('myTimezone').value;
             const myStart = document.getElementById('myStart').value;
             const myEnd = document.getElementById('myEnd').value;
-            const otherTz = document.getElementById('otherTimezone').value;
+            const otherTzValue = document.getElementById('otherTimezone').value;
             const otherStart = document.getElementById('otherStart').value;
             const otherEnd = document.getElementById('otherEnd').value;
             
             if (!myStart || !myEnd || !otherStart || !otherEnd) {
-                document.getElementById('result').innerHTML = lang.fillAllTimes;
+                document.getElementById('result').innerHTML = `<p style="color: #d9534f;">${lang.fillAllTimes}</p>`;
                 return;
             }
             
-            // Validate time ranges
             const myStartMin = parseTimeToMin(myStart);
             const myEndMin = parseTimeToMin(myEnd);
             const otherStartMin = parseTimeToMin(otherStart);
             const otherEndMin = parseTimeToMin(otherEnd);
             
             if (myStartMin >= myEndMin) {
-                document.getElementById('result').innerHTML = `<p>${lang.invalidTime} (${lang.yourFreeTime})</p>`;
+                document.getElementById('result').innerHTML = `<p style="color: #d9534f;">${lang.invalidTime} (${lang.yourFreeTime})</p>`;
                 return;
             }
             if (otherStartMin >= otherEndMin) {
-                document.getElementById('result').innerHTML = `<p>${lang.invalidTime} (${lang.otherFreeTime})</p>`;
+                document.getElementById('result').innerHTML = `<p style="color: #d9534f;">${lang.invalidTime} (${lang.otherFreeTime})</p>`;
                 return;
             }
             
-            // Get offsets
-            const myOffset = parseInt(myTz.replace('UTC', ''));
-            const otherOffset = parseInt(otherTz.replace('UTC', ''));
-            const difference = otherOffset - myOffset; // hours
+            // Calculation Logic
+            const myOffset = parseInt(myTzValue.replace('UTC', ''));
+            const otherOffset = parseInt(otherTzValue.replace('UTC', ''));
+            const difference = otherOffset - myOffset; 
             
-            // Shift other's time to my timezone
             let shiftedOtherStartMin = otherStartMin + difference * 60;
             let shiftedOtherEndMin = otherEndMin + difference * 60;
             
-            // Adjust for day wrap-around
             shiftedOtherStartMin = ((shiftedOtherStartMin % 1440) + 1440) % 1440;
             shiftedOtherEndMin = ((shiftedOtherEndMin % 1440) + 1440) % 1440;
             
-            // Find overlap in my timezone
             let totalOverlapMin = 0;
             let overlapBars = [];
+            
             if (shiftedOtherStartMin <= shiftedOtherEndMin) {
                 const overlapStart = Math.max(myStartMin, shiftedOtherStartMin);
                 const overlapEnd = Math.min(myEndMin, shiftedOtherEndMin);
@@ -287,7 +400,6 @@
                     overlapBars.push({ left: (overlapStart / 1440) * 100, width: ((overlapEnd - overlapStart) / 1440) * 100 });
                 }
             } else {
-                // Crosses midnight
                 const part1Start = shiftedOtherStartMin;
                 const part1End = 1440;
                 const part2Start = 0;
@@ -308,8 +420,12 @@
                 }
             }
             
+            // Get text from dropdowns
+            const myTzText = document.getElementById('myTimezone').options[document.getElementById('myTimezone').selectedIndex].text;
+            const otherTzText = document.getElementById('otherTimezone').options[document.getElementById('otherTimezone').selectedIndex].text;
+
+            // Generate Result HTML
             if (totalOverlapMin === 0) {
-                // Calculate timeline positions
                 const totalMinutes = 1440;
                 const myLeft = (myStartMin / totalMinutes) * 100;
                 const myWidth = ((myEndMin - myStartMin) / totalMinutes) * 100;
@@ -317,10 +433,12 @@
                 const otherBars = getBars(shiftedOtherStartMin, shiftedOtherEndMin);
                 
                 document.getElementById('result').innerHTML = `
-                    <p>${lang.noOverlap}</p>
-                    <p>${lang.yourFreeTime}</p>
+                    <p style="font-weight: bold; color: #777;">${lang.noOverlap}</p>
+                    
+                    <p style="margin-top: 15px; margin-bottom: 5px;">${lang.yourFreeTime}</p>
                     ${generateTimelineHTML(myBars, 'free-my')}
-                    <p>${lang.otherFreeTime}</p>
+                    
+                    <p style="margin-top: 15px; margin-bottom: 5px;">${lang.otherFreeTime}</p>
                     ${generateTimelineHTML(otherBars, 'free-other')}
                 `;
                 return;
@@ -330,7 +448,6 @@
             const hours = Math.floor(overlapHours);
             const minutes = Math.round((overlapHours - hours) * 60);
             
-            // Generate period strings
             const periodsMy = overlapBars.map(bar => {
                 const startMin = Math.round(bar.left * 1440 / 100);
                 const endMin = Math.round((bar.left + bar.width) * 1440 / 100);
@@ -347,18 +464,24 @@
             });
             const overlapStartOther = periodsOther.join(', ');
             
-            // Calculate timeline positions
             const totalMinutes = 1440;
             const myLeft = (myStartMin / totalMinutes) * 100;
             const myWidth = ((myEndMin - myStartMin) / totalMinutes) * 100;
-            
             const otherBars = getBars(shiftedOtherStartMin, shiftedOtherEndMin);
             
             document.getElementById('result').innerHTML = `
-                <p>${lang.overlappingTimes} ${hours} ${lang.hours} ${minutes} ${lang.minutes}</p>
-                <p>${lang.inYourTimezone} (${myTz}): ${overlapStartMy}</p>
-                <p>${lang.inOtherTimezone} (${otherTz}): ${overlapStartOther}</p>
-                <p>${lang.yourFreeTime}</p>
+                <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border: 1px solid #c3e6cb; margin-bottom: 20px;">
+                    <p style="font-size: 1.2em; color: #2e7d32; margin: 0;">
+                        <strong>${lang.overlappingTimes} ${hours} ${lang.hours} ${minutes} ${lang.minutes}</strong>
+                    </p>
+                </div>
+                
+                <p><strong>${lang.inYourTimezone}:</strong> <br><span style="color: #666; font-size: 0.9em;">${myTzText}</span><br> <span style="font-size: 1.2em; color: blue;">${overlapStartMy}</span></p>
+                <p><strong>${lang.inOtherTimezone}:</strong> <br><span style="color: #666; font-size: 0.9em;">${otherTzText}</span><br> <span style="font-size: 1.2em; color: red;">${overlapStartOther}</span></p>
+                
+                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+                
+                <p style="margin-bottom: 5px;">${lang.yourFreeTime}</p>
                 <div class="timeline">
                     <div class="free-my" style="left: ${myLeft}%; width: ${myWidth}%;"></div>
                 </div>
@@ -369,7 +492,8 @@
                     <span>18:00</span>
                     <span>23:59</span>
                 </div>
-                <p>${lang.otherFreeTime}</p>
+                
+                <p style="margin-top: 20px; margin-bottom: 5px;">${lang.otherFreeTime}</p>
                 <div class="timeline">
                     ${otherBars.map(bar => `<div class="free-other" style="left: ${bar.left}%; width: ${bar.width}%;"></div>`).join('')}
                 </div>
@@ -379,7 +503,7 @@
                     <span>12:00</span>
                     <span>18:00</span>
                     <span>23:59</span>
-
+                </div>
             `;
         }
         
@@ -393,6 +517,11 @@
             const minutes = min % 60;
             return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
         }
+
+        // Initialize with default language
+        document.getElementById('language').value = currentLang;
+        updateLanguage();
+        populateTimezones();
     </script>
 </body>
 </html>
