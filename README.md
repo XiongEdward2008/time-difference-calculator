@@ -1,8 +1,8 @@
 # Time Difference Calculator
 
-People may travel or study abroad, but they still want to keep in touch. This project helps people find their shared free time, which helps them decide how to arrange their schedules.
+People frequently travel or study abroad but still want to stay connected. This project helps users find shared free time, facilitating easier schedule coordination.
 
 ## Usage
 
-Open `index.html` in a web browser. Select your timezone and the other's timezone, input your and other's free time start and end Click "Calculate Overlap" to see the overlapping hours and the overlapping time periods in both timezones.  
-<a herf="https://xiongedward2008.github.io/time-difference-calculator/">You can also click here to open a demo.</a>
+Open 'index.html' in a web browser. Select your time zone and the other person's time zone. Input the start and end times for your availability. Finally, click "Calculate Overlap" to view the overlapping hours and time periods for both locations.  
+Click [here](https://xiongedward2008.github.io/time-difference-calculator/) to view the demo.
