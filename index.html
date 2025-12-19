@@ -342,6 +342,28 @@
             `;
         }
         
+        function getIntervals(start, end) {
+            if (start <= end) return [[start, end]];
+            return [[start, 1440], [0, end]];
+        }
+
+        function mergeSegments(segments) {
+            if (segments.length === 0) return [];
+            let sorted = segments.map(s => ({...s})).sort((a, b) => a.start - b.start);
+            
+            const merged = [sorted[0]];
+            for (let i = 1; i < sorted.length; i++) {
+                const prev = merged[merged.length - 1];
+                const curr = sorted[i];
+                if (curr.start === prev.end) {
+                    prev.end = curr.end;
+                } else {
+                    merged.push(curr);
+                }
+            }
+            return merged;
+        }
+
         function changeLanguage() {
             currentLang = document.getElementById('language').value;
             updateLanguage();
@@ -395,65 +417,44 @@
             const otherStartMin = parseTimeToMin(otherStart);
             const otherEndMin = parseTimeToMin(otherEnd);
             
-            if (myStartMin >= myEndMin) {
-                document.getElementById('result').innerHTML = `<p style="color: #d9534f;">${lang.invalidTime} (${lang.yourFreeTime})</p>`;
-                return;
-            }
-            if (otherStartMin >= otherEndMin) {
-                document.getElementById('result').innerHTML = `<p style="color: #d9534f;">${lang.invalidTime} (${lang.otherFreeTime})</p>`;
-                return;
-            }
             
             const myOffset = parseInt(myTzValue.replace('UTC', ''));
             const otherOffset = parseInt(otherTzValue.replace('UTC', ''));
             const difference = otherOffset - myOffset; 
             
-            let shiftedOtherStartMin = otherStartMin + difference * 60;
-            let shiftedOtherEndMin = otherEndMin + difference * 60;
+            let shiftedOtherStartMin = (otherStartMin + difference * 60) % 1440;
+            if (shiftedOtherStartMin < 0) shiftedOtherStartMin += 1440;
             
-            shiftedOtherStartMin = ((shiftedOtherStartMin % 1440) + 1440) % 1440;
-            shiftedOtherEndMin = ((shiftedOtherEndMin % 1440) + 1440) % 1440;
+            let shiftedOtherEndMin = (otherEndMin + difference * 60) % 1440;
+            if (shiftedOtherEndMin < 0) shiftedOtherEndMin += 1440;
+            
+            const myIntervals = getIntervals(myStartMin, myEndMin);
+            const otherIntervals = getIntervals(shiftedOtherStartMin, shiftedOtherEndMin);
             
             let totalOverlapMin = 0;
-            let overlapBars = [];
+            let overlapSegments = [];
             
-            if (shiftedOtherStartMin <= shiftedOtherEndMin) {
-                const overlapStart = Math.max(myStartMin, shiftedOtherStartMin);
-                const overlapEnd = Math.min(myEndMin, shiftedOtherEndMin);
-                if (overlapStart < overlapEnd) {
-                    totalOverlapMin = overlapEnd - overlapStart;
-                    overlapBars.push({ left: (overlapStart / 1440) * 100, width: ((overlapEnd - overlapStart) / 1440) * 100 });
-                }
-            } else {
-                const part1Start = shiftedOtherStartMin;
-                const part1End = 1440;
-                const part2Start = 0;
-                const part2End = shiftedOtherEndMin;
-                
-                const overlap1Start = Math.max(myStartMin, part1Start);
-                const overlap1End = Math.min(myEndMin, part1End);
-                if (overlap1Start < overlap1End) {
-                    totalOverlapMin += overlap1End - overlap1Start;
-                    overlapBars.push({ left: (overlap1Start / 1440) * 100, width: ((overlap1End - overlap1Start) / 1440) * 100 });
-                }
-                
-                const overlap2Start = Math.max(myStartMin, part2Start);
-                const overlap2End = Math.min(myEndMin, part2End);
-                if (overlap2Start < overlap2End) {
-                    totalOverlapMin += overlap2End - overlap2Start;
-                    overlapBars.push({ left: (overlap2Start / 1440) * 100, width: ((overlap2End - overlap2Start) / 1440) * 100 });
-                }
-            }
+            myIntervals.forEach(myInt => {
+                otherIntervals.forEach(otherInt => {
+                    const start = Math.max(myInt[0], otherInt[0]);
+                    const end = Math.min(myInt[1], otherInt[1]);
+                    if (start < end) {
+                        totalOverlapMin += (end - start);
+                        overlapSegments.push({start, end});
+                    }
+                });
+            });
+            
+            // Sort segments by start time
+            overlapSegments.sort((a, b) => a.start - b.start);
             
             const myTzText = document.getElementById('myTimezone').options[document.getElementById('myTimezone').selectedIndex].text;
             const otherTzText = document.getElementById('otherTimezone').options[document.getElementById('otherTimezone').selectedIndex].text;
 
+            const myBars = getBars(myStartMin, myEndMin);
+            const otherBars = getBars(shiftedOtherStartMin, shiftedOtherEndMin);
+
             if (totalOverlapMin === 0) {
-                const totalMinutes = 1440;
-                const myLeft = (myStartMin / totalMinutes) * 100;
-                const myWidth = ((myEndMin - myStartMin) / totalMinutes) * 100;
-                const myBars = [{ left: myLeft, width: myWidth }];
-                const otherBars = getBars(shiftedOtherStartMin, shiftedOtherEndMin);
                 
                 document.getElementById('result').innerHTML = `
                     <p style="font-weight: bold; color: #777;">${lang.noOverlap}</p>
@@ -471,26 +472,29 @@
             const hours = Math.floor(overlapHours);
             const minutes = Math.round((overlapHours - hours) * 60);
             
-            const periodsMy = overlapBars.map(bar => {
-                const startMin = Math.round(bar.left * 1440 / 100);
-                const endMin = Math.round((bar.left + bar.width) * 1440 / 100);
-                return `${minToTime(startMin)} - ${minToTime(endMin)}`;
-            });
-            const overlapStartMy = periodsMy.join(', ');
+            const mergedMySegments = mergeSegments(overlapSegments);
+            const overlapStartMy = mergedMySegments.map(seg => `${minToTime(seg.start)} - ${minToTime(seg.end)}`).join(', ');
             
-            const periodsOther = overlapBars.map(bar => {
-                let startOtherMin = Math.round(bar.left * 1440 / 100) - difference * 60;
-                let endOtherMin = Math.round((bar.left + bar.width) * 1440 / 100) - difference * 60;
-                startOtherMin = ((startOtherMin % 1440) + 1440) % 1440;
-                endOtherMin = ((endOtherMin % 1440) + 1440) % 1440;
-                return `${minToTime(startOtherMin)} - ${minToTime(endOtherMin)}`;
+            let otherSegments = [];
+            overlapSegments.forEach(seg => {
+                const shift = -difference * 60;
+                const duration = seg.end - seg.start;
+                let normStart = (seg.start + shift) % 1440;
+                if (normStart < 0) normStart += 1440;
+                
+                let normEnd = normStart + duration;
+                
+                if (normEnd <= 1440) {
+                    otherSegments.push({start: normStart, end: normEnd});
+                } else {
+                    otherSegments.push({start: normStart, end: 1440});
+                    otherSegments.push({start: 0, end: normEnd - 1440});
+                }
             });
-            const overlapStartOther = periodsOther.join(', ');
             
-            const totalMinutes = 1440;
-            const myLeft = (myStartMin / totalMinutes) * 100;
-            const myWidth = ((myEndMin - myStartMin) / totalMinutes) * 100;
-            const otherBars = getBars(shiftedOtherStartMin, shiftedOtherEndMin);
+            const mergedOtherSegments = mergeSegments(otherSegments);
+            const overlapStartOther = mergedOtherSegments.map(seg => `${minToTime(seg.start)} - ${minToTime(seg.end)}`).join(', ');
+            
             
             document.getElementById('result').innerHTML = `
                 <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border: 1px solid #c3e6cb; margin-bottom: 20px;">
@@ -505,28 +509,10 @@
                 <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
                 
                 <p style="margin-bottom: 5px;">${lang.yourFreeTime}</p>
-                <div class="timeline">
-                    <div class="free-my" style="left: ${myLeft}%; width: ${myWidth}%;"></div>
-                </div>
-                <div class="timeline-labels">
-                    <span>00:00</span>
-                    <span>06:00</span>
-                    <span>12:00</span>
-                    <span>18:00</span>
-                    <span>23:59</span>
-                </div>
+                ${generateTimelineHTML(myBars, 'free-my')}
                 
                 <p style="margin-top: 20px; margin-bottom: 5px;">${lang.otherFreeTime}</p>
-                <div class="timeline">
-                    ${otherBars.map(bar => `<div class="free-other" style="left: ${bar.left}%; width: ${bar.width}%;"></div>`).join('')}
-                </div>
-                <div class="timeline-labels">
-                    <span>00:00</span>
-                    <span>06:00</span>
-                    <span>12:00</span>
-                    <span>18:00</span>
-                    <span>23:59</span>
-                </div>
+                ${generateTimelineHTML(otherBars, 'free-other')}
             `;
         }
         
